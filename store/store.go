@@ -1,27 +1,39 @@
 package store
 
 import (
+	"fmt"
 	helper "inmem-db/helpers"
 	"sync"
 )
 
-const defaultSize = 50
-
 type HashTable struct {
-	maps []sync.Map
-	size int
+	maps     []sync.Map
+	size     int
+	compress bool
 }
 
 func NewHashTable(size int) *HashTable {
 	return &HashTable{
-		maps: make([]sync.Map, size),
-		size: size,
+		maps:     make([]sync.Map, size),
+		size:     size,
+		compress: false,
 	}
 }
 
-func (hashtable *HashTable) Add(key string, value interface{}) {
+func (hashtable *HashTable) Add(key string, value interface{}) error {
 	hash := helper.Hash(key)
-	hashtable.maps[hash].Store(key, value)
+	if hashtable.compress {
+		compressedData, err := helper.Compress(value)
+		if err != nil {
+			return err
+		}
+		hashtable.maps[hash].Store(key, compressedData)
+
+	} else {
+		hashtable.maps[hash].Store(key, value)
+	}
+	return nil
+
 }
 
 func (hashtable *HashTable) Get(key string) (any, bool) {
@@ -30,7 +42,16 @@ func (hashtable *HashTable) Get(key string) (any, bool) {
 	if !ok {
 		return "", false
 	}
+	if hashtable.compress {
+		unCompressedData, err := helper.DeCompress(value)
+		if err != nil {
+			fmt.Printf("%+vn", err)
+			return "", false
+		}
+		return unCompressedData, true
+	}
 	return value, true
+
 }
 
 func (hashtable *HashTable) Del(key string) {
