@@ -59,9 +59,13 @@ func Compress(data any) (any, error) {
 	return data, nil
 }
 
-func DeCompress(compressedData bytes.Buffer) (any, error) {
-
-	gzipReader, err := gzip.NewReader(&compressedData)
+func DeCompress(compressedData any) (any, error) {
+	inBytes, err1 := convertToByte(compressedData)
+	if err1 != nil {
+		return "", err1
+	}
+	inBytesBuffer := bytes.NewBuffer(inBytes)
+	gzipReader, err := gzip.NewReader(inBytesBuffer)
 	if err != nil {
 		return "", err
 	}
