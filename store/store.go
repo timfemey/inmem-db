@@ -8,11 +8,11 @@ import (
 
 type HashTable struct {
 	maps     []sync.Map
-	size     int
+	size     int64
 	compress bool
 }
 
-func NewHashTable(size int) *HashTable {
+func NewHashTable(size int64) *HashTable {
 	return &HashTable{
 		maps:     make([]sync.Map, size),
 		size:     size,
