@@ -35,19 +35,28 @@ func convertToAny(initialVal []byte) (any, error) {
 	return decodedData, nil
 }
 
-func Compress(data any) (bytes.Buffer, error) {
+func Compress(data any) (any, error) {
 	var compressedData bytes.Buffer
 	gzipScripter := gzip.NewWriter(&compressedData)
 	inBytes, err := convertToByte(data)
 	if err != nil {
-		return compressedData, err
+		return "", err
 	}
 	_, err2 := gzipScripter.Write(inBytes)
 	if err2 != nil {
-		return compressedData, err
+		return "", err
 	}
 	gzipScripter.Close()
-	return compressedData, nil
+	inByte, err3 := convertToByte(compressedData)
+	if err3 != nil {
+		return "", err3
+	}
+	data, err4 := convertToAny(inByte)
+	if err4 != nil {
+		return "", err4
+	}
+
+	return data, nil
 }
 
 func DeCompress(compressedData bytes.Buffer) (any, error) {
