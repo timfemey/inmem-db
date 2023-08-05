@@ -12,11 +12,11 @@ type HashTable struct {
 	compress bool
 }
 
-func NewHashTable(size int64) *HashTable {
+func NewHashTable(size int64, compress bool) *HashTable {
 	return &HashTable{
 		maps:     make([]sync.Map, size),
 		size:     size,
-		compress: false,
+		compress: compress,
 	}
 }
 
