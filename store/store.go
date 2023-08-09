@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"fmt"
 	helper "inmem-db/helpers"
 	"sync"
@@ -21,7 +22,7 @@ func NewHashTable(size int64, compress bool) *HashTable {
 }
 
 func (hashtable *HashTable) Add(key string, value interface{}) error {
-	hash := helper.Hash(key)
+	hash := helper.Hash(key) % uint64(hashtable.size)
 	if hashtable.compress {
 		compressedData, err := helper.Compress(value)
 		if err != nil {
@@ -37,13 +38,14 @@ func (hashtable *HashTable) Add(key string, value interface{}) error {
 }
 
 func (hashtable *HashTable) Get(key string) (any, bool) {
-	hash := helper.Hash(key)
+	hash := (helper.Hash(key)) % uint64(hashtable.size)
 	value, ok := hashtable.maps[hash].Load(key)
 	if !ok {
 		return "", false
 	}
 	if hashtable.compress {
-		unCompressedData, err := helper.DeCompress(value)
+		val := value.(bytes.Buffer)
+		unCompressedData, err := helper.DeCompress(&val)
 		if err != nil {
 			fmt.Printf("%+vn", err)
 			return "", false
